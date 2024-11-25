@@ -27,7 +27,7 @@
               </div>
             </a>
             <mat-menu #menu="matMenu">
-              <button [routerLink]="['account', 1]" mat-menu-item>
+              <button [routerLink]="['account', userDetail.id]" mat-menu-item>
                 <mat-icon>account_circle</mat-icon>
                 <span> View Profile </span>
               </button>
@@ -36,6 +36,20 @@
                 <span> Logout </span>
               </button>
             </mat-menu>
+            <a *ngIf="userDetail?.roles.includes('Admin')" mat-button style="color: aliceblue;" routerLink="/users">
+              <mat-icon>
+                groups
+              </mat-icon>
+              Users
+            </a>
+
+            <a *ngIf="userDetail?.roles.includes('Admin')" mat-button style="color: aliceblue;" routerLink="/roles">
+              <mat-icon>
+                settings
+              </mat-icon>
+              Roles
+            </a>
+
           </div>
         </div>
         }@else{<div>

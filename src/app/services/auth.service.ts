@@ -8,13 +8,15 @@ import { map } from 'rxjs/operators';
 import { isToken } from 'typescript';
 import { jwtDecode } from 'jwt-decode';
 import { RegisterRequest } from '../interfaces/register-request';
+import { UserDetail } from '../interfaces/user-detail';
+import { ResetPasswordRequest } from '../interfaces/reset-password-request';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   apiUrl: string = environment.apiUrl;
-  private tokenKey = 'token';
+  private userKey = 'user';
 
   constructor(private http: HttpClient) {}
 
@@ -24,7 +26,7 @@ export class AuthService {
       .pipe(
         map((response) => {
           if (response.isSuccess) {
-            localStorage.setItem(this.tokenKey, response.token);
+            localStorage.setItem(this.userKey, JSON.stringify(response));
           }
           return response;
         })
@@ -32,10 +34,24 @@ export class AuthService {
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/account/register`, data)
-      
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/account/register`,
+      data
+    );
   }
+
+  getDetail = (): Observable<UserDetail> =>
+    this.http.get<UserDetail>(`${this.apiUrl}/account/detail`);
+
+
+  forgotPassword = (email: string):Observable<AuthResponse>=>
+    this.http.post<AuthResponse>(`${this.apiUrl}/account/forgot-password`,{email,
+
+    });
+
+
+  resetPassword = (data: ResetPasswordRequest):Observable<AuthResponse>=>
+      this.http.post<AuthResponse>(`${this.apiUrl}/account/reset-password`,data);
 
   //lấy thông tin chi tiết người dùng
   getUserDetail = () => {
@@ -58,7 +74,7 @@ export class AuthService {
     if (!token) {
       return false;
     }
-    return !this.isTokenExpired();
+    return true;
   };
 
   private isTokenExpired() {
@@ -68,16 +84,41 @@ export class AuthService {
     }
     const decoded = jwtDecode(token);
     const isTokenExpired = Date.now() >= decoded['exp']! * 1000;
-    if (isTokenExpired) {
-      this.logout();
-    }
-    return isTokenExpired;
+    // if (isTokenExpired) {
+    //   this.logout();
+    // }
+    return true;
   }
 
   logout = (): void => {
-    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userKey);
   };
 
-  private getToken = (): string | null =>
-    localStorage.getItem(this.tokenKey) || '';
+  getRoles = (): string[] | null=>{
+    const token = this.getToken();
+    if(!token) return null;
+
+    const decodedToken:any = jwtDecode(token);
+    return decodedToken.role || null;
+  }
+
+  getAll = (): Observable<UserDetail[]> =>
+    this.http.get<UserDetail[]>(`${this.apiUrl}/account`);
+
+  refreshToken = (data:{email:string;token:string;refreshToken:string;}): Observable<AuthResponse> =>
+    this.http.post<AuthResponse>(`${this.apiUrl}/account/refresh-token`,data);
+
+  getToken = (): string | null => {
+    const user = localStorage.getItem(this.userKey);
+    if(!user) return null;
+    const userDetail: AuthResponse = JSON.parse(user);
+    return userDetail.token;
+  };
+
+  getRefreshToken = (): string | null => {
+    const user = localStorage.getItem(this.userKey);
+    if(!user) return null;
+    const userDetail: AuthResponse = JSON.parse(user);
+    return userDetail.refreshToken;
+  };
 }

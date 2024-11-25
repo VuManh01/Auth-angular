@@ -31,7 +31,6 @@
       <mat-label>Roles</mat-label>
       <mat-select formControlName="roles" multiple>
         @for (item of roles$ | async; track item){
-
           <mat-option [value]="item.name">{{item.name}}</mat-option>
         }
       </mat-select>
@@ -43,7 +42,6 @@
       <input formControlName="password" matInput type="{{passwordHide ? 'password' : 'text'}}" placeholder="Password">
       <mat-icon matPrefix>lock</mat-icon>
       <mat-icon (click)="passwordHide = !passwordHide" matSuffix>{{passwordHide ? 'visibility_off' : 'visibility'}}</mat-icon>
-
     </mat-form-field>
 
     <mat-form-field appearance="fill" class="w-full">
@@ -61,7 +59,7 @@
     [disabled]="!registerForm.valid"
     class="w-full border-collapse text-white rounded-md border-slate-200 disabled:bg-purple-400 py-2
     px-3 bg-purple-700" type="submit">
-    Register
+      Register
     </button>
 
     <div class="my-4">

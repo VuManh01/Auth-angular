@@ -1,5 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormGroup,
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -22,26 +29,26 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatIconModule,
     MatSelectModule,
     MatSnackBarModule,
-    AsyncPipe
+    AsyncPipe,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })
 export class RegisterComponent implements OnInit {
-  roleService=inject(RoleService);
+  roleService = inject(RoleService);
   authService = inject(AuthService);
   matSnackBar = inject(MatSnackBar);
-  roles$!: Observable<Role[]>;
+  roles$!:Observable<Role[]>;
   fb = inject(FormBuilder);
   registerForm!: FormGroup;
   router = inject(Router);
   confirmPasswordHide: boolean = true;
   passwordHide: boolean = true;
-  errors!:ValidationErrors[];
+  errors!: ValidationErrors[];
 
-  register(){
+  register() {
     this.authService.register(this.registerForm.value).subscribe({
-      next:(response)=>{
+      next: (response) => {
         console.log(response);
         this.matSnackBar.open(response.message, 'Close', {
           duration: 5084,
@@ -49,41 +56,43 @@ export class RegisterComponent implements OnInit {
         });
         this.router.navigate(['/login']);
       },
-      error:(err:HttpErrorResponse)=>{
-        if(err!.status === 400){
+      error: (err: HttpErrorResponse) => {
+        if (err!.status === 400) {
           this.errors = err!.error;
           this.matSnackBar.open('Validations error', 'Close', {
             duration: 5084,
             horizontalPosition: 'center',
-        });
-      }
-    },
-    complete: () => console.log('Register complete'),
-
+          });
+        }
+      },
+      complete: () => console.log('Register success'),
     });
   }
 
   ngOnInit(): void {
-    this.registerForm = this.fb.group({
-      email:['',[Validators.required, Validators.email]],
-      password:['',[Validators.required]],
-      fullname:['',[Validators.required]],
-      roles:[''],
-      confirmPassword:['',[Validators.required]]
-    },{
-      validator:this.passwordMatchValidator,
-    });
+    this.registerForm = this.fb.group(
+      {
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required]],
+        fullName: ['', [Validators.required]],
+        roles: [''],
+        confirmPassword: ['', [Validators.required]],
+      },
+      {
+        validator: this.passwordMatchValidator,
+      }
+    );
     this.roles$ = this.roleService.getRoles();
   }
 
   private passwordMatchValidator(
-    control:AbstractControl
-  ):{[key:string]:boolean} | null{
+    control: AbstractControl
+  ): { [key: string]: boolean } | null {
     const password = control.get('password')?.value;
     const confirmPassword = control.get('confirmPassword')?.value;
 
-    if(password !== confirmPassword){
-      return {'passwordMismatch': true};
+    if (password !== confirmPassword) {
+      return { passwordMismatch : true };
     }
     return null;
   }
